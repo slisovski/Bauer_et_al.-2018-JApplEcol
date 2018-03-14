@@ -1,0 +1,3 @@
+useDynLib(SDPmig)
+importFrom(Rcpp, evalCpp)
+exportPattern("^[[:alpha:]]+")

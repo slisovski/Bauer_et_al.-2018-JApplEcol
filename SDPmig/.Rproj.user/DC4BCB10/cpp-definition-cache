@@ -1,0 +1,161 @@
+[
+    {
+        "definitions" : [
+            {
+                "column" : 5,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 52,
+                "name" : "Eval(double, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@Eval#d#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 64,
+                "name" : "DecError(double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@DecError#d#d#"
+            },
+            {
+                "column" : 5,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 76,
+                "name" : "Round(double)",
+                "parent_name" : "",
+                "usr" : "c:@F@Round#d#"
+            },
+            {
+                "column" : 15,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 83,
+                "name" : "FNtanh(double)",
+                "parent_name" : "",
+                "usr" : "c:@F@FNtanh#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 90,
+                "name" : "InterpolateTR(int, arma::vec, arma::vec)",
+                "parent_name" : "",
+                "usr" : "c:@F@InterpolateTR#I#$@N@arma@C@Col>#d#S0_#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 114,
+                "name" : "CalculateTR(int, int, double, double, const int, arma::vec, arma::vec)",
+                "parent_name" : "",
+                "usr" : "c:@F@CalculateTR#I#I#d#d#1I#$@N@arma@C@Col>#d#S0_#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 139,
+                "name" : "Interpolate(const int &, const int &, double, double, bool)",
+                "parent_name" : "",
+                "usr" : "c:@F@Interpolate#&1I#S0_#d#d#b#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 184,
+                "name" : "Predation(const int &, const int &, const int &, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@Predation#&1I#S0_#S0_#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 218,
+                "name" : "FindF(const int &, const int &, const int &, int, double, double, double)",
+                "parent_name" : "",
+                "usr" : "c:@F@FindF#&1I#S0_#S0_#I#d#d#d#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 253,
+                "name" : "Foraging(const int &, const int &, const int &)",
+                "parent_name" : "",
+                "usr" : "c:@F@Foraging#&1I#S0_#S0_#"
+            },
+            {
+                "column" : 8,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 340,
+                "name" : "Flying(const int &, const int &, const int &, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@Flying#&1I#S0_#S0_#I#"
+            },
+            {
+                "column" : 6,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 403,
+                "name" : "Init(int, int, int, double, double, int, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, double, double, double, double, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, double, arma::mat, arma::mat, arma::mat, arma::mat, Rcpp::NumericVector)",
+                "parent_name" : "",
+                "usr" : "c:@F@Init#I#I#I#d#d#I#$@N@Rcpp@C@Vector>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#S0_#S0_#d#d#d#d#S0_#S0_#S0_#S0_#S0_#S0_#d#$@N@arma@C@Mat>#d#S1_#S1_#S1_#S0_#"
+            },
+            {
+                "column" : 12,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 466,
+                "name" : "BackwardIteration",
+                "parent_name" : "",
+                "usr" : "c:@F@BackwardIteration#"
+            },
+            {
+                "column" : 6,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 572,
+                "name" : "InitSim(int, int, int, double, double, int, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, double, double, double, double, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, Rcpp::NumericVector, double, arma::mat, arma::mat, arma::mat, arma::mat, Rcpp::NumericVector, arma::cube, arma::cube, arma::cube, arma::cube, arma::cube)",
+                "parent_name" : "",
+                "usr" : "c:@F@InitSim#I#I#I#d#d#I#$@N@Rcpp@C@Vector>#VI14#@N@Rcpp@CT>1#T@PreserveStorage#S0_#S0_#d#d#d#d#S0_#S0_#S0_#S0_#S0_#S0_#d#$@N@arma@C@Mat>#d#S1_#S1_#S1_#S0_#$@N@arma@C@Cube>#d#S2_#S2_#S2_#S2_#"
+            },
+            {
+                "column" : 11,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 645,
+                "name" : "simForaging(double, int, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@simForaging#d#I#I#I#"
+            },
+            {
+                "column" : 11,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 704,
+                "name" : "simFlying(int, int, int, int)",
+                "parent_name" : "",
+                "usr" : "c:@F@simFlying#I#I#I#I#"
+            },
+            {
+                "column" : 12,
+                "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+                "kind" : 6,
+                "line" : 742,
+                "name" : "forwardSim(int, int, int, arma::vec)",
+                "parent_name" : "",
+                "usr" : "c:@F@forwardSim#I#I#I#$@N@arma@C@Col>#d#"
+            }
+        ],
+        "file" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/sdpmig/InfectedMigration/RPackage/SDPmig/src/SdpMigC.cpp",
+        "file_last_write" : 1500042418
+    }
+]

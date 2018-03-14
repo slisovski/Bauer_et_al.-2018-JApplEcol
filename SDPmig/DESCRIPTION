@@ -1,0 +1,11 @@
+Package: SDPmig
+Type: Package
+Title: Stochastic Dynamic Programing - Optimal Migration
+Version: 0.0
+Date: 2017-07-11
+Author: Simeon Lisovski & Silke Bauer
+Maintainer: Simeon Lisovski <simeon.lisovski@vogelwarte.ch>
+Description: More about what it does (maybe more than one line)
+License: What license is it under?
+Imports: Rcpp (>= 0.12.11)
+LinkingTo: Rcpp, RcppArmadillo

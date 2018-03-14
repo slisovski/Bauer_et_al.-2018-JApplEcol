@@ -1,0 +1,634 @@
+---
+title: "Scenarios - Geese Hunting Project"
+author: "RMarkdown Output"
+date: "12/07/2017"
+output: word_document
+---
+
+## Index
+
+
+* Predation with default expenditure
+    + b0, b1, b2
+    + b0
+    + b1
+    + b2
+* Predation with expenditure - 5% daily expenditure
+    + b0, b1, b2
+    + b0
+    + b1
+    + b2
+* Predation with expenditure - 10% daily expenditure
+    + b0, b1, b2
+    + b0
+    + b1
+    + b2
+* Cummulative intake/damage with default expenditure
+    + b0, b1, b2
+    + b0
+    + b1
+    + b2
+***
+
+```{r setup, include=FALSE}
+library(SDPmig)
+
+
+parms <- list(
+  MaxT   = 100,  ## Maximum time
+  MaxX   = 100,  ## Maximum body condition
+  NSites = 8,    ## Excl. Breeding
+  
+  ### Species specific Parameters ##
+  
+  B0 = 3,       ## Future reproductive success
+  w  = 0.028,   ## Parameters for sigmoidal TR function
+  xc = 55,      ## 
+  
+  ## Flying capacities
+  c     = 14776,
+  speed = 1440,
+  
+  ## Wind
+  WindAssist = 0,
+  WindProb   = 1,
+  
+  ## Decision Error
+  decError = 4000,
+  
+  ## Terminal Reward
+  xFTReward = c(0, 86, 87, 97, 98, 100),
+  yFTReward = c(0, 0,   2,  2,  0,   0),
+  
+  
+  ### Site specific Parameters ###
+  path = "~/Dropbox/Science/Projects/SOI_Projects/Hunting/Params/WFGparameter.csv",
+  
+  pred_a1  = 2,
+  pred_a2  = 2,
+  
+  ### Accuracy
+  ZStdNorm = c(-2.5, -2.0, -1.5, -1.0, -0.5,  0.0,  0.5,  1.0,  1.5,  2.0,  2.5),
+  PStdNorm = c(0.0092, 0.0279, 0.0655, 0.1210, 0.1747, 0.2034, 0.1747, 0.1210, 0.0655, 0.0279, 0.0092)
+  
+) ## End parameter ####
+
+dist <- as.matrix(read.table("/Users/simeon/Dropbox/Science/Projects/SOI_Projects/Hunting/Params/dist.txt"))
+sdp  <- makeSDPmig(parms)
+sdp@Sites$dist <- dist
+```
+
+## Predation with default expenditure (b0, b1, b2)
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+## Hunting Intensity (b0, b1, b2) - expend = default
+ind <- cbind(0:2, rep(c(1:8, 158), each = 3))
+
+res <- matrix(ncol = 11, nrow = nrow(ind))
+
+for(s in 1:nrow(ind)) {
+  
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  
+  
+  sites <- as.numeric(strsplit(as.character(ind[s,2]), "")[[1]])
+  sdp@Sites$b0[sites] <- ifelse(ind[s,1]==0, 1e-4, ifelse(ind[s,1]==1, 1e-3, 1e-2))
+  sdp@Sites$b1[sites] <- ifelse(ind[s,1]==0, 1e-3, ifelse(ind[s,1]==1, 1e-2, 1e-1))
+  sdp@Sites$b2[sites] <- ifelse(ind[s,1]==0, 1e-4, ifelse(ind[s,1]==1, 1e-3, 1e-2))
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+
+  tmp0 <- matrix(NA, ncol = sdpM@Init$NSites+1, nrow = dim(simu)[1])
+  
+  for(i in 1:nrow(tmp0)) {
+    tmp <- simu[i,,]
+    if(sum(tmp[5,])>0) tmp <- tmp[,1:(min(which(tmp[5,]==1)))]
+    tmp0[i,] <- apply(cbind(0:sdpM@Init$NSites), 1, function(x) {
+      ifelse(all(tmp[2,]<x) , NA, sum(tmp[2,]==x, na.rm = T))
+    })
+  }
+  
+  tmp2 <- apply(simu, 1, function(x) {
+                                  if(sum(x[5,])>0) {
+                                            tmp <- x[3,min(which(x[5,]==1))]
+                                            ifelse(tmp>0, 1, 2) } else NA
+                                          })
+  tmp3 <- apply(cbind(c(1,2)), 1, function(x) sum(!is.na(tmp2) & tmp2==x))
+  
+  
+  out <- c(apply(tmp0, 2, mean, na.rm = T)[-ncol(tmp0)],
+           sum(apply(tmp0, 1, function(x) sum(x, na.rm = T)<100))/100, tmp3)
+  res[s,] <- out
+}
+
+
+### Plot
+layout(matrix(1:(9*2), byrow = T, ncol = 2), width = c(1, 0.3))
+opar <- par(mar = c(1,6,1,0), oma = c(3,0,0,0), las = 1)
+
+for(i in 1:9) {
+  
+  tmp <- res[ind[,2]==unique(ind[,2])[i],]
+  bp <- barplot(tmp[-1,1:8], beside = T, ylim = c(0, 60),
+                col = c(adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9)), ylab = "", xlab = "")
+  points(bp[1,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[2,], tmp[1,1:8], pch = 16, cex = 1.4)
+  
+  arrows(bp[1,], tmp[2,1:8], bp[1,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[2,], tmp[3,1:8], bp[2,], tmp[1,1:8], length = 0, lwd = 2.5)
+  
+  if(i == 9) axis(1, at = apply(bp, 2, mean), labels = c("NL", "D", "PL", "L/U", "E/T", "K/K", "Ark", "Nem"))
+  
+  bp2 <- barplot(tmp[,9], col = c("white", adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9)),
+              ylim = c(0,1), xlab = "", ylab = "")
+  
+  if(i == 9) axis(1, at = bp2, labels = c("0", "+", "++"))
+  
+}
+mtext("Days at Site", 2, outer = T, line = -3, las = 3, cex = 1.2)
+# mtext("Mortality", 2, outer = T, line = -39, las = 3, cex = 1.2)
+# mtext("Reason for Mortality (shot/starvation)", 2, outer = T, line = -50, las = 3, cex = 1.2)
+
+par(opar)
+```
+
+
+## Predation with default expenditure (b0)
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+## Hunting Intensity (b0, b1, b2) - expend = default
+ind <- cbind(0:4, rep(c(1:8, 158), each = 5))
+
+bs <- c(1e-4, 1e-3, 1e-2, 1e-1, 1e-0)
+
+res <- matrix(ncol = 11, nrow = nrow(ind))
+
+for(s in 1:nrow(ind)) {
+  
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  
+  
+  sites <- as.numeric(strsplit(as.character(ind[s,2]), "")[[1]])
+  sdp@Sites$b0[sites] <- bs[ind[s,1]+1]
+  # sdp@Sites$b1[sites] <- ifelse(ind[s,1]==0, 1e-3, ifelse(ind[s,1]==1, 1e-2, 1e-1))
+  # sdp@Sites$b2[sites] <- ifelse(ind[s,1]==0, 1e-4, ifelse(ind[s,1]==1, 1e-3, 1e-2))
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+  # simuPlot(simu, sdpM, fun = "median")
+  
+  tmp0 <- matrix(NA, ncol = sdpM@Init$NSites+1, nrow = dim(simu)[1])
+  
+  for(i in 1:nrow(tmp0)) {
+    tmp <- simu[i,,]
+    if(sum(tmp[5,])>0) tmp <- tmp[,1:(min(which(tmp[5,]==1)))]
+    tmp0[i,] <- apply(cbind(0:sdpM@Init$NSites), 1, function(x) {
+      ifelse(all(tmp[2,]<x) , NA, sum(tmp[2,]==x, na.rm = T))
+    })
+  }
+  
+  tmp2 <- apply(simu, 1, function(x) {
+                                  if(sum(x[5,])>0) {
+                                            tmp <- x[3,min(which(x[5,]==1))]
+                                            ifelse(tmp>0, 1, 2) } else NA
+                                          })
+  tmp3 <- apply(cbind(c(1,2)), 1, function(x) sum(!is.na(tmp2) & tmp2==x))
+  
+  
+  out <- c(apply(tmp0, 2, mean, na.rm = T)[-ncol(tmp0)],
+           sum(apply(tmp0, 1, function(x) sum(x, na.rm = T)<100))/100, tmp3)
+  res[s,] <- out
+}
+
+
+### Plot
+layout(matrix(1:(9*2), byrow = T, ncol = 2), width = c(1, 0.3))
+opar <- par(mar = c(1,6,1,0), oma = c(3,0,0,0), las = 1)
+
+for(i in 1:9) {
+  
+  tmp <- res[ind[,2]==unique(ind[,2])[i],]
+  tmp[is.nan(tmp)] <- 0
+  bp <- barplot(tmp[-1,1:8], beside = T, ylim = c(0, 60),
+                col = c(adjustcolor("indianred4", alpha.f = 0.1), 
+                        adjustcolor("indianred4", alpha.f = 0.4),
+                        adjustcolor("indianred4", alpha.f = 0.7),
+                        adjustcolor("indianred4", alpha.f = 0.9)), ylab = "", xlab = "")
+  points(bp[1,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[2,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[3,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[4,], tmp[1,1:8], pch = 16, cex = 1.4)
+  
+  arrows(bp[1,], tmp[2,1:8], bp[1,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[2,], tmp[3,1:8], bp[2,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[3,], tmp[4,1:8], bp[3,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[4,], tmp[5,1:8], bp[4,], tmp[1,1:8], length = 0, lwd = 2.5)
+  
+  if(i == 9) axis(1, at = apply(bp, 2, mean), labels = c("NL", "D", "PL", "L/U", "E/T", "K/K", "Ark", "Nem"))
+  
+  bp2 <- barplot(tmp[,9], 
+                 col = c("white",  adjustcolor("indianred4", alpha.f = 0.1), 
+                                   adjustcolor("indianred4", alpha.f = 0.4),
+                                   adjustcolor("indianred4", alpha.f = 0.7),
+                                   adjustcolor("indianred4", alpha.f = 0.9)),
+                 ylim = c(0,1), xlab = "", ylab = "")
+  
+  if(i == 9) axis(1, at = bp2, labels = c("0", "+", "++", "+++", "++++"))
+  
+  
+}
+mtext("Days at Site", 2, outer = T, line = -3, las = 3, cex = 1.2)
+# mtext("Mortality", 2, outer = T, line = -39, las = 3, cex = 1.2)
+
+par(opar)
+```
+
+
+## Predation with default expenditure (b1)
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+ind <- cbind(0:4, rep(c(1:8, 158), each = 5))
+
+bs <- c(1e-3, 1e-2, 1e-1, 1e-0, 1e+1)
+
+res <- matrix(ncol = 11, nrow = nrow(ind))
+
+for(s in 1:nrow(ind)) {
+  
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  
+  
+  sites <- as.numeric(strsplit(as.character(ind[s,2]), "")[[1]])
+  # sdp@Sites$b0[sites] <- bs[ind[s,1]+1]
+  sdp@Sites$b1[sites] <- bs[ind[s,1]+1]
+  # sdp@Sites$b2[sites] <- ifelse(ind[s,1]==0, 1e-4, ifelse(ind[s,1]==1, 1e-3, 1e-2))
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+  # simuPlot(simu, sdpM, fun = "median")
+  
+  tmp0 <- matrix(NA, ncol = sdpM@Init$NSites+1, nrow = dim(simu)[1])
+  
+  for(i in 1:nrow(tmp0)) {
+    tmp <- simu[i,,]
+    if(sum(tmp[5,])>0) tmp <- tmp[,1:(min(which(tmp[5,]==1)))]
+    tmp0[i,] <- apply(cbind(0:sdpM@Init$NSites), 1, function(x) {
+      ifelse(all(tmp[2,]<x) , NA, sum(tmp[2,]==x, na.rm = T))
+    })
+  }
+  
+  tmp2 <- apply(simu, 1, function(x) {
+                                  if(sum(x[5,])>0) {
+                                            tmp <- x[3,min(which(x[5,]==1))]
+                                            ifelse(tmp>0, 1, 2) } else NA
+                                          })
+  tmp3 <- apply(cbind(c(1,2)), 1, function(x) sum(!is.na(tmp2) & tmp2==x))
+  
+  
+  out <- c(apply(tmp0, 2, mean, na.rm = T)[-ncol(tmp0)],
+           sum(apply(tmp0, 1, function(x) sum(x, na.rm = T)<100))/100, tmp3)
+  res[s,] <- out
+}
+
+
+layout(matrix(1:(9*2), byrow = T, ncol = 2), width = c(1, 0.3))
+opar <- par(mar = c(1,6,1,0), oma = c(3,0,0,0), las = 1)
+
+for(i in 1:9) {
+  
+  tmp <- res[ind[,2]==unique(ind[,2])[i],]
+  tmp[is.nan(tmp)] <- 0
+  bp <- barplot(tmp[-1,1:8], beside = T, ylim = c(0, 60),
+                col = c(adjustcolor("indianred4", alpha.f = 0.1), 
+                        adjustcolor("indianred4", alpha.f = 0.4),
+                        adjustcolor("indianred4", alpha.f = 0.7),
+                        adjustcolor("indianred4", alpha.f = 0.9)), ylab = "", xlab = "")
+  points(bp[1,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[2,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[3,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[4,], tmp[1,1:8], pch = 16, cex = 1.4)
+  
+  arrows(bp[1,], tmp[2,1:8], bp[1,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[2,], tmp[3,1:8], bp[2,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[3,], tmp[4,1:8], bp[3,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[4,], tmp[5,1:8], bp[4,], tmp[1,1:8], length = 0, lwd = 2.5)
+  
+  if(i == 9) axis(1, at = apply(bp, 2, mean), labels = c("NL", "D", "PL", "L/U", "E/T", "K/K", "Ark", "Nem"))
+  
+  bp2 <- barplot(tmp[,9], 
+                 col = c("white",  adjustcolor("indianred4", alpha.f = 0.1), 
+                                   adjustcolor("indianred4", alpha.f = 0.4),
+                                   adjustcolor("indianred4", alpha.f = 0.7),
+                                   adjustcolor("indianred4", alpha.f = 0.9)),
+                 ylim = c(0,1), xlab = "", ylab = "")
+  
+  if(i == 9) axis(1, at = bp2, labels = c("0", "+", "++", "+++", "++++"))
+  
+  
+}
+mtext("Days at Site", 2, outer = T, line = -3, las = 3, cex = 1.2)
+# mtext("Mortality", 2, outer = T, line = -39, las = 3, cex = 1.2)
+
+par(opar)
+```
+
+
+## Predation with default expenditure (b2)
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+ind <- cbind(0:4, rep(c(1:8, 158), each = 5))
+
+bs <- c(1e-4, 1e-3, 1e-2, 1e-1, 1e-0)
+
+res <- matrix(ncol = 11, nrow = nrow(ind))
+
+for(s in 1:nrow(ind)) {
+  
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  
+  
+  sites <- as.numeric(strsplit(as.character(ind[s,2]), "")[[1]])
+  # sdp@Sites$b0[sites] <- bs[ind[s,1]+1]
+  # sdp@Sites$b1[sites] <- bs[ind[s,1]+1]
+  sdp@Sites$b2[sites] <- bs[ind[s,1]+1]
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+  # simuPlot(simu, sdpM, fun = "median")
+  
+  tmp0 <- matrix(NA, ncol = sdpM@Init$NSites+1, nrow = dim(simu)[1])
+  
+  for(i in 1:nrow(tmp0)) {
+    tmp <- simu[i,,]
+    if(sum(tmp[5,])>0) tmp <- tmp[,1:(min(which(tmp[5,]==1)))]
+    tmp0[i,] <- apply(cbind(0:sdpM@Init$NSites), 1, function(x) {
+      ifelse(all(tmp[2,]<x) , NA, sum(tmp[2,]==x, na.rm = T))
+    })
+  }
+  
+  tmp2 <- apply(simu, 1, function(x) {
+                                  if(sum(x[5,])>0) {
+                                            tmp <- x[3,min(which(x[5,]==1))]
+                                            ifelse(tmp>0, 1, 2) } else NA
+                                          })
+  tmp3 <- apply(cbind(c(1,2)), 1, function(x) sum(!is.na(tmp2) & tmp2==x))
+  
+  
+  out <- c(apply(tmp0, 2, mean, na.rm = T)[-ncol(tmp0)],
+           sum(apply(tmp0, 1, function(x) sum(x, na.rm = T)<100))/100, tmp3)
+  res[s,] <- out
+}
+
+
+layout(matrix(1:(9*2), byrow = T, ncol = 2), width = c(1, 0.3))
+opar <- par(mar = c(1,6,1,0), oma = c(3,0,0,0), las = 1)
+
+for(i in 1:9) {
+  
+  tmp <- res[ind[,2]==unique(ind[,2])[i],]
+  tmp[is.nan(tmp)] <- 0
+  bp <- barplot(tmp[-1,1:8], beside = T, ylim = c(0, 60),
+                col = c(adjustcolor("indianred4", alpha.f = 0.1), 
+                        adjustcolor("indianred4", alpha.f = 0.4),
+                        adjustcolor("indianred4", alpha.f = 0.7),
+                        adjustcolor("indianred4", alpha.f = 0.9)), ylab = "", xlab = "")
+  points(bp[1,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[2,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[3,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[4,], tmp[1,1:8], pch = 16, cex = 1.4)
+  
+  arrows(bp[1,], tmp[2,1:8], bp[1,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[2,], tmp[3,1:8], bp[2,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[3,], tmp[4,1:8], bp[3,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[4,], tmp[5,1:8], bp[4,], tmp[1,1:8], length = 0, lwd = 2.5)
+  
+  if(i == 9) axis(1, at = apply(bp, 2, mean), labels = c("NL", "D", "PL", "L/U", "E/T", "K/K", "Ark", "Nem"))
+  
+  bp2 <- barplot(tmp[,9], 
+                 col = c("white",  adjustcolor("indianred4", alpha.f = 0.1), 
+                                   adjustcolor("indianred4", alpha.f = 0.4),
+                                   adjustcolor("indianred4", alpha.f = 0.7),
+                                   adjustcolor("indianred4", alpha.f = 0.9)),
+                 ylim = c(0,1), xlab = "", ylab = "")
+  
+  if(i == 9) axis(1, at = bp2, labels = c("0", "+", "++", "+++", "++++"))
+  
+  
+}
+mtext("Days at Site", 2, outer = T, line = -3, las = 3, cex = 1.2)
+# mtext("Mortality", 2, outer = T, line = -39, las = 3, cex = 1.2)
+
+par(opar)
+```
+
+
+## Predation with + 5% & 10% expenditure (default b0, b1, b2)
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+## Hunting Intensity (b0, b1, b2) - expend = default
+ind <- cbind(0:2, rep(c(1:8, 158), each = 3))
+
+res <- matrix(ncol = 11, nrow = nrow(ind))
+
+for(s in 1:nrow(ind)) {
+  
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  sdp@Sites$expend <- rep(4, 9)
+  
+  sites <- as.numeric(strsplit(as.character(ind[s,2]), "")[[1]])
+  # sdp@Sites$b0[sites] <- ifelse(ind[s,1]==0, 1e-4, ifelse(ind[s,1]==1, 1e-3, 1e-2))
+  # sdp@Sites$b1[sites] <- ifelse(ind[s,1]==0, 1e-3, ifelse(ind[s,1]==1, 1e-2, 1e-1))
+  # sdp@Sites$b2[sites] <- ifelse(ind[s,1]==0, 1e-4, ifelse(ind[s,1]==1, 1e-3, 1e-2))
+  
+  sdp@Sites$expend[sites] <- 4+ifelse(ind[s,1]==0, 0, ifelse(ind[s,1]==1, 0.2, 0.4))
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+
+  tmp0 <- matrix(NA, ncol = sdpM@Init$NSites+1, nrow = dim(simu)[1])
+  
+  for(i in 1:nrow(tmp0)) {
+    tmp <- simu[i,,]
+    if(sum(tmp[5,])>0) tmp <- tmp[,1:(min(which(tmp[5,]==1)))]
+    tmp0[i,] <- apply(cbind(0:sdpM@Init$NSites), 1, function(x) {
+      ifelse(all(tmp[2,]<x) , NA, sum(tmp[2,]==x, na.rm = T))
+    })
+  }
+  
+  tmp2 <- apply(simu, 1, function(x) {
+                                  if(sum(x[5,])>0) {
+                                            tmp <- x[3,min(which(x[5,]==1))]
+                                            ifelse(tmp>0, 1, 2) } else NA
+                                          })
+  tmp3 <- apply(cbind(c(1,2)), 1, function(x) sum(!is.na(tmp2) & tmp2==x))
+  
+  
+  out <- c(apply(tmp0, 2, mean, na.rm = T)[-ncol(tmp0)],
+           sum(apply(tmp0, 1, function(x) sum(x, na.rm = T)<100))/100, tmp3)
+  res[s,] <- out
+}
+
+
+### Plot
+layout(matrix(1:(9*2), byrow = T, ncol = 2), width = c(1, 0.3))
+opar <- par(mar = c(1,6,1,0), oma = c(3,0,0,0), las = 1)
+
+for(i in 1:9) {
+  
+  tmp <- res[ind[,2]==unique(ind[,2])[i],]
+  bp <- barplot(tmp[-1,1:8], beside = T, ylim = c(0, 60),
+                col = c(adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9)), ylab = "", xlab = "")
+  points(bp[1,], tmp[1,1:8], pch = 16, cex = 1.4)
+  points(bp[2,], tmp[1,1:8], pch = 16, cex = 1.4)
+  
+  arrows(bp[1,], tmp[2,1:8], bp[1,], tmp[1,1:8], length = 0, lwd = 2.5)
+  arrows(bp[2,], tmp[3,1:8], bp[2,], tmp[1,1:8], length = 0, lwd = 2.5)
+  
+  if(i == 9) axis(1, at = apply(bp, 2, mean), labels = c("NL", "D", "PL", "L/U", "E/T", "K/K", "Ark", "Nem"))
+  
+  bp2 <- barplot(tmp[,9], col = c("white", adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9)),
+              ylim = c(0,1), xlab = "", ylab = "")
+  
+  if(i == 9) axis(1, at = bp2, labels = c("0", "+", "++"))
+
+  
+}
+mtext("Days at Site", 2, outer = T, line = -3, las = 3, cex = 1.2)
+# mtext("Mortality", 2, outer = T, line = -39, las = 3, cex = 1.2)
+# mtext("Reason for Mortality (shot/starvation)", 2, outer = T, line = -50, las = 3, cex = 1.2)
+
+par(opar)
+```
+
+### Intake/Damage
+##  Hunting Intensity (b0, b1, b2) - expend = default
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+ind <- cbind(0:2, rep(c(1:8, 158), each = 3))
+
+for(t in unique(ind[,2])) {
+  
+  ind_tmp <- ind[ind[,2]==t,]
+  res <- array(dim = c(99, 8,  nrow(ind_tmp)))
+  
+  for(s in 1:nrow(ind_tmp)) {
+    
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  sdp@Sites$expend <- rep(4, 9)
+  
+  
+  sites <- as.numeric(strsplit(as.character(ind_tmp[s,2]), "")[[1]])
+  sdp@Sites$b0[sites] <- ifelse(ind_tmp[s,1]==0, 1e-4, ifelse(ind_tmp[s,1]==1, 1e-3, 1e-2))
+  sdp@Sites$b1[sites] <- ifelse(ind_tmp[s,1]==0, 1e-3, ifelse(ind_tmp[s,1]==1, 1e-2, 1e-1))
+  sdp@Sites$b2[sites] <- ifelse(ind_tmp[s,1]==0, 1e-4, ifelse(ind_tmp[s,1]==1, 1e-3, 1e-2))
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+  
+  tmp_add <- matrix(0, ncol = 8, nrow = 99)
+  for(i in 1:nrow(simu)) {
+    
+    if(sum(simu[i,5,])>0) tmp <- simu[i,,1:(min(which(simu[i,5,]==1)))] else tmp <- simu[i,,]
+    out1 <- apply(cbind(0:7), 1, function(y) {
+              if(sum(tmp[2,]==y)<2) rep(0, 99) else {
+              tmp1 <- merge(data.frame(t = 0:99), data.frame(t = tmp[c(1,3),tmp[2,]==y][1,], x = tmp[c(1,3),tmp[2,]==y][2,]), all.x = T)$x
+              tmp1 <- diff(tmp1)
+              tmp1 <-   ifelse(is.na(tmp1), 0, tmp1+4)
+              }})
+    tmp_add <- tmp_add+suppressWarnings(matrix(unlist(out1), nrow =  99, ncol = 8))
+  }
+  res[,,s] <- tmp_add
+  }      
+  
+  
+  layout(matrix(1:(8*2), ncol = 2, byrow = T), widths = c(1, 0.35))
+  opar <- par(mar = c(2,7,0.5,0.4), oma = c(4,1,0,0), las = 1)
+  # layout.show(8*2)
+  
+  for(s in 1:8) {
+    matplot(rbind(c(0,0,0), res[,s,]), type = "o", pch = 16, lty = 1,
+            col = c(adjustcolor("indianred4", alpha.f = 0.2), c(adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9))), 
+                    xlab = "", ylab = "", las = 1, bty = "n", ylim = c(0, 700), xaxt = "n")
+    
+    if(s<8) axis(1, labels = F, line = 0.5) else axis(1, line = 0.5)
+    if(s==8) mtext("Time", 1, cex = 1.3, line = 3)
+    text(0, 18000, c("NL", "D", "PL", "Lit/Ukr", "Est/Tver", "Kar/Kost", "Ark", "Nem")[s], pos = 4, cex = 1.2)
+    
+    
+    bp <- barplot(apply(rbind(c(0,0,0), res[,s,]), 2, sum), ylim = c(0, 25000),
+                  col = c(adjustcolor("indianred4", alpha.f = 0.2), c(adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9))))
+  
+   if(s==8) axis(1, at = bp, labels = c("0", "+", "++"), line = 0.5) 
+  }
+  mtext("Daily Intake/Damage", 2, outer = T, line = -2.2, cex = 1.4, las = 3)
+  par(opar)
+}
+```
+
+### Intake/Damage (Matrix Plot)
+
+
+```{r, fig.width=7.7, fig.height=10, echo=FALSE}
+ind <- cbind(0:2, rep(c(1,5,8, 158), each = 3))
+
+opar <- par(mfcol = c(8, 4), mar = c(2,2,1,1), oma = c(3,3,0,0))
+
+for(t in unique(ind[,2])) {
+  
+  ind_tmp <- ind[ind[,2]==t,]
+  res <- array(dim = c(99, 8,  nrow(ind_tmp)))
+  
+  for(s in 1:nrow(ind_tmp)) {
+    
+  sdp@Sites$b0 <- rep(1e-4, 9)
+  sdp@Sites$b1 <- rep(1e-3, 9)
+  sdp@Sites$b2 <- rep(1e-4, 9)
+  
+  
+  sites <- as.numeric(strsplit(as.character(ind_tmp[s,2]), "")[[1]])
+  sdp@Sites$b0[sites] <- ifelse(ind_tmp[s,1]==0, 1e-4, ifelse(ind_tmp[s,1]==1, 1e-3, 1e-2))
+  sdp@Sites$b1[sites] <- ifelse(ind_tmp[s,1]==0, 1e-3, ifelse(ind_tmp[s,1]==1, 1e-2, 1e-1))
+  sdp@Sites$b2[sites] <- ifelse(ind_tmp[s,1]==0, 1e-4, ifelse(ind_tmp[s,1]==1, 1e-3, 1e-2))
+  
+  sdpM <- bwdIteration(sdp)
+  simu <- MigSim(sdpM, 100, 1, 1, c(33, 10))
+  
+  tmp_add <- matrix(0, ncol = 8, nrow = 99)
+  for(i in 1:nrow(simu)) {
+    
+    if(sum(simu[i,5,])>0) tmp <- simu[i,,1:(min(which(simu[i,5,]==1)))] else tmp <- simu[i,,]
+    out1 <- apply(cbind(0:7), 1, function(y) {
+              if(sum(tmp[2,]==y)<2) rep(0, 99) else {
+              tmp1 <- merge(data.frame(t = 0:99), data.frame(t = tmp[c(1,3),tmp[2,]==y][1,], x = tmp[c(1,3),tmp[2,]==y][2,]), all.x = T)$x
+              tmp1 <- diff(tmp1)
+              tmp1 <-   ifelse(is.na(tmp1), 0, tmp1+4)
+              }})
+    tmp_add <- tmp_add+suppressWarnings(matrix(unlist(out1), nrow =  99, ncol = 8))
+  }
+  res[,,s] <- tmp_add
+  }      
+  
+  
+  for(s in 1:8) {
+    bp <- barplot(apply(rbind(c(0,0,0), res[,s,]), 2, sum), ylim = c(0, 25000),
+                  col = c(adjustcolor("indianred4", alpha.f = 0.2), c(adjustcolor("indianred4", alpha.f = 0.5), adjustcolor("indianred4", alpha.f = 0.9))))
+  
+   if(s==8) axis(1, at = bp, labels = c("0", "+", "++"), line = 0.5) 
+  }
+}
+par(opar)
+```
+

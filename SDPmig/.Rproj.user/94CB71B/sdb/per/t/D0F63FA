@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(SDPmig)\n\n###############################################\n### Parameters ################################\n###############################################\n\nparms <- list(\n  MaxT   = 100,  ## Maximum time\n  MaxX   = 100,  ## Maximum body condition\n  NSites = 8,    ## Excl. Breeding\n  \n  ### Species specific Parameters ##\n  \n  B0 = 3,       ## Future reproductive success\n  w  = 0.028,   ## Parameters for sigmoidal TR function\n  xc = 55,      ## \n  \n  ## Flying capacities\n  c     = 14776,\n  speed = 1440,\n  \n  ## Wind\n  WindAssist = 0,\n  WindProb   = 1,\n  \n  ## Decision Error\n  decError = 4000,\n  \n  ## Terminal Reward\n  xFTReward = c(0, 86, 87, 97, 98, 100),\n  yFTReward = c(0, 0,   2,  2,  0,   0),\n  \n  \n  ### Site specific Parameters ###\n  path = \"~/Dropbox/Science/Projects/SOI_Projects/Hunting/Params/WFGparameter.csv\",\n  \n  pred_a1  = 2,\n  pred_a2  = 2,\n  \n  ### Accuracy\n  ZStdNorm = c(-2.5, -2.0, -1.5, -1.0, -0.5,  0.0,  0.5,  1.0,  1.5,  2.0,  2.5),\n  PStdNorm = c(0.0092, 0.0279, 0.0655, 0.1210, 0.1747, 0.2034, 0.1747, 0.1210, 0.0655, 0.0279, 0.0092)\n  \n) ## End parameter ####\n\n\n#######################\n### Simulation ########\n#######################\n\ndist <- as.matrix(read.table(\"/Users/simeon/Dropbox/Science/Projects/SOI_Projects/Hunting/Params/dist.txt\"))\n\nsdp0  <- makeSDPmig(parms, \"GWF-Geese: Hunting\")\nsdp0@Sites$dist     <- dist\n# sdp0@Sites$b0[c(5)] <- 1e-2\n# sdp0@Sites$b1[c(1)] <- 1e-3\n# sdp0@Sites$b2[c(8)] <- 1e-1\nsdp0@Sites$expend[1]  <- 4.5\n\nsdpM <- bwdIteration(sdp0)\nsimu <- MigSim(sdpM, 100, 1, 1, c(33, 10)) ## Silke?? x_start\nsimuPlot(simu, sdpM, fun = \"mean\")\n\nfitnessPlot(sdpM, cond = c(20, 70))\n# fitnessSitePlot(sdpM)\n# decisionPlot(sdpM, time = c(5, 15, 90))\n\n\n\n\n\n",
+    "created" : 1499759839694.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2558159368",
+    "id" : "D0F63FA",
+    "lastKnownWriteTime" : 1500050335,
+    "last_content_update" : 1500050335216,
+    "path" : "~/Dropbox/Science/Projects/SOI_Projects/SDPmig/InfectedMigration/RPackage/SDPmig/Workflow.R",
+    "project_path" : "Workflow.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

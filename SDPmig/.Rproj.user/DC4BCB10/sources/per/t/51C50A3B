@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1517313508481.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "883721313",
+    "id" : "51C50A3B",
+    "lastKnownWriteTime" : 1500046600,
+    "last_content_update" : 1517313566150,
+    "path" : "C:/Users/SLi/Dropbox/Science/Projects/SOI_Projects/Hunting/Analysis/Scenarios.Rmd",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "77,0",
+        "last_setup_crc32" : "37CCBB5Ef422ab93",
+        "scrollLine" : "79"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}
